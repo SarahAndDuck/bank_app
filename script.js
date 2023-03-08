@@ -67,3 +67,21 @@ const inputTransferAmount = getElement('.form__input--amount');
 const inputLoanAmount = getElement('.form__input--loan-amount');
 const inputCloseUsername = getElement('.form__input--user');
 const inputClosePin = getElement('.form__input--pin');
+
+const displayTransactions = function (transactions) {
+  containerTransactions.innerHTML = '';
+  transactions.forEach(function (trans, index) {
+    const transType = trans > 0 ? 'deposit' : 'withdrawal';
+    const transactionRow = `<div class="transactions__row">
+<div class="transactions__type transactions__type--${transType}">
+  ${index + 1} ${transType == 'deposit' ? 'ДЕПОЗИТ' : 'ВЫВОД СРЕДСТВ'}
+</div>
+
+<div class="transactions__value">${trans}$</div>
+
+ </div>`;
+    containerTransactions.insertAdjacentHTML('afterbegin', transactionRow);
+  });
+};
+
+displayTransactions(account1.transactions);
