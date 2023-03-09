@@ -88,7 +88,7 @@ displayTransactions(account1.transactions);
 
 // nickNames = first letters of first and last name (userName)
 
-function createNicknames(accs) {
+const createNicknames = function (accs) {
   accs.forEach(
     acc =>
       (acc['nickNames'] = acc.userName
@@ -97,16 +97,16 @@ function createNicknames(accs) {
         .map(item => item[0])
         .join(''))
   );
-}
+};
 createNicknames(accounts);
 console.log(accounts);
 
-function getBalance(transactions) {
+const displayBalance = function (transactions) {
   const balance = transactions.reduce(
     (acc, trans) => acc + trans,
     transactions[0]
   );
   console.log(balance);
   labelBalance.textContent = `${balance}$`;
-}
+};
 getBalance(account1.transactions);
