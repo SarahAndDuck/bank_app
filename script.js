@@ -5,7 +5,7 @@
 const account1 = {
   userName: 'Cecil Ireland',
   transactions: [500, 250, -300, 5000, -850, -110, -170, 1100],
-  interest: 1.5,
+  interest: 1.1,
   pin: 1111,
 };
 
@@ -109,4 +109,24 @@ const displayBalance = function (transactions) {
   console.log(balance);
   labelBalance.textContent = `${balance}$`;
 };
-getBalance(account1.transactions);
+displayBalance(account1.transactions);
+
+const displayTotal = function (transactions, interest) {
+  const depositesTotal = `${transactions
+    .filter(item => item > 0)
+    .reduce((acc, item) => acc + Math.abs(item), 0)}$`;
+  labelSumIn.textContent = depositesTotal;
+
+  const withdrawalsTotal = `${transactions
+    .filter(item => item < 0)
+    .reduce((acc, item) => acc + Math.abs(item), 0)}$`;
+  labelSumOut.textContent = withdrawalsTotal;
+
+  const interestTotal = `${transactions
+    .filter(item => item > 0)
+    .map(item => (item * interest) / 100)
+    .filter(item => item > 5)
+    .reduce((acc, item) => acc + item, 0)}$`;
+  labelSumInterest.textContent = interestTotal;
+};
+displayTotal(account1.transactions, account1.interest);
