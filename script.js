@@ -89,12 +89,12 @@ const displayTransactions = function (transactions) {
 
 // ========================================
 // createNicknames
-// nickNames = first letters of first and last name (userName)
+// nickName = first letters of first and last name (userName)
 // ========================================
 const createNicknames = function (accs) {
   accs.forEach(
     acc =>
-      (acc['nickNames'] = acc.userName
+      (acc['nickName'] = acc.userName
         .toLowerCase()
         .split(' ')
         .map(item => item[0])
@@ -105,12 +105,12 @@ const createNicknames = function (accs) {
 // ========================================
 // displayBalance
 // ========================================
-const displayBalance = function (transactions) {
-  const balance = transactions.reduce(
+const displayBalance = function (account) {
+  const balance = account.transactions.reduce(
     (acc, trans) => acc + trans,
-    transactions[0]
+    account.transactions[0]
   );
-  console.log(balance);
+  account.balance = balance;
   labelBalance.textContent = `${balance}$`;
 };
 
@@ -135,7 +135,17 @@ const displayTotal = function ({ transactions, interest }) {
     .reduce((acc, item) => acc + item, 0)}$`;
   labelSumInterest.textContent = interestTotal;
 };
-
+// ========================================
+// Display transactions, balance, total
+// ========================================
+function updateUi(account) {
+  // Display transactions
+  displayTransactions(account.transactions);
+  // Display balance
+  displayBalance(account);
+  //  Display total
+  displayTotal(account);
+}
 // ========================================
 // login
 // ========================================
@@ -147,7 +157,7 @@ btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
   const loginUsername = inputLoginUsername.value;
   const loginPin = inputLoginPin.value;
-  currentAccount = accounts.find(item => item.nickNames == loginUsername);
+  currentAccount = accounts.find(item => item.nickName == loginUsername);
   if (currentAccount.pin == Number(loginPin)) {
     // Display UI welcome message
     labelWelcome.textContent = `С возвращением, ${
@@ -157,12 +167,34 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginUsername.value = '';
     inputLoginPin.value = '';
     inputLoginPin.blur();
-    // Display transactions
-    displayTransactions(currentAccount.transactions);
-    // Display balance
-    displayBalance(currentAccount.transactions);
-    //  Display total
-    displayTotal(currentAccount);
+    updateUi(currentAccount);
     containerApp.style.opacity = '100';
+  }
+});
+
+// ========================================
+// Transfers
+// ========================================
+
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+  const transferAmount = inputTransferAmount.value;
+  const recipientNickname = inputTransferTo.value;
+  const recipientAccount = accounts.find(
+    account => account['nickName'] === recipientNickname
+  );
+  inputTransferTo.value = '';
+  inputTransferAmount.value = '';
+  if (
+    transferAmount > 0 &&
+    currentAccount.balance >= transferAmount &&
+    recipientAccount &&
+    currentAccount.nickName !== recipientAccount.nickName
+  ) {
+    currentAccount.transactions.push(-Number(transferAmount));
+    recipientAccount.transactions.push(Number(transferAmount));
+
+    updateUi(currentAccount);
+    // Clear inputTransfe
   }
 });
