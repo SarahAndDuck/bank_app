@@ -5,7 +5,7 @@
 const account1 = {
   userName: 'Cecil Ireland',
   transactions: [500, 250, -300, 5000, -850, -110, -170, 1100],
-  interest: 1.1,
+  interest: 1.5,
   pin: 1111,
 };
 
@@ -68,6 +68,9 @@ const inputLoanAmount = getElement('.form__input--loan-amount');
 const inputCloseUsername = getElement('.form__input--user');
 const inputClosePin = getElement('.form__input--pin');
 
+// ======================================
+// displayTransactions
+// ======================================
 const displayTransactions = function (transactions) {
   containerTransactions.innerHTML = '';
   transactions.forEach(function (trans, index) {
@@ -84,10 +87,10 @@ const displayTransactions = function (transactions) {
   });
 };
 
-displayTransactions(account1.transactions);
-
+// ========================================
+// createNicknames
 // nickNames = first letters of first and last name (userName)
-
+// ========================================
 const createNicknames = function (accs) {
   accs.forEach(
     acc =>
@@ -98,9 +101,10 @@ const createNicknames = function (accs) {
         .join(''))
   );
 };
-createNicknames(accounts);
-console.log(accounts);
 
+// ========================================
+// displayBalance
+// ========================================
 const displayBalance = function (transactions) {
   const balance = transactions.reduce(
     (acc, trans) => acc + trans,
@@ -109,9 +113,11 @@ const displayBalance = function (transactions) {
   console.log(balance);
   labelBalance.textContent = `${balance}$`;
 };
-displayBalance(account1.transactions);
 
-const displayTotal = function (transactions, interest) {
+// ========================================
+// displayTotal
+// ========================================
+const displayTotal = function ({ transactions, interest }) {
   const depositesTotal = `${transactions
     .filter(item => item > 0)
     .reduce((acc, item) => acc + Math.abs(item), 0)}$`;
@@ -129,4 +135,34 @@ const displayTotal = function (transactions, interest) {
     .reduce((acc, item) => acc + item, 0)}$`;
   labelSumInterest.textContent = interestTotal;
 };
-displayTotal(account1.transactions, account1.interest);
+
+// ========================================
+// login
+// ========================================
+createNicknames(accounts);
+console.log(accounts);
+let currentAccount;
+
+btnLogin.addEventListener('click', function (e) {
+  e.preventDefault();
+  const loginUsername = inputLoginUsername.value;
+  const loginPin = inputLoginPin.value;
+  currentAccount = accounts.find(item => item.nickNames == loginUsername);
+  if (currentAccount.pin == Number(loginPin)) {
+    // Display UI welcome message
+    labelWelcome.textContent = `С возвращением, ${
+      currentAccount.userName.split(' ')[0]
+    }!`;
+    // Clear login
+    inputLoginUsername.value = '';
+    inputLoginPin.value = '';
+    inputLoginPin.blur();
+    // Display transactions
+    displayTransactions(currentAccount.transactions);
+    // Display balance
+    displayBalance(currentAccount.transactions);
+    //  Display total
+    displayTotal(currentAccount);
+    containerApp.style.opacity = '100';
+  }
+});
