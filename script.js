@@ -71,9 +71,14 @@ const inputClosePin = getElement('.form__input--pin');
 // ======================================
 // displayTransactions
 // ======================================
-const displayTransactions = function (transactions) {
+const displayTransactions = function (transactions, sort = false) {
+  // если   sort = true, копируем  slice() сортированный массив .sort() и присваиваем переменной transacs, иначе оставляем не сортированнм
+  const transacs = sort
+    ? transactions.slice().sort((a, b) => (a > b ? 1 : -1))
+    : transactions;
+
   containerTransactions.innerHTML = '';
-  transactions.forEach(function (trans, index) {
+  transacs.forEach(function (trans, index) {
     const transType = trans > 0 ? 'deposit' : 'withdrawal';
     const transactionRow = `<div class="transactions__row">
 <div class="transactions__type transactions__type--${transType}">
@@ -244,4 +249,12 @@ btnLoan.addEventListener('click', function (e) {
     currentAccount.transactions.push(loanAmount);
     updateUi(currentAccount);
   }
+});
+// ========================================
+// transactions sorting
+// ========================================
+let areTransactionSorted = false;
+
+btnSort.addEventListener('click', function () {
+  displayTransactions(currentAccount.transactions, !areTransactionSorted);
 });
