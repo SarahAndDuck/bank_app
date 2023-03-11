@@ -139,6 +139,7 @@ const displayTotal = function ({ transactions, interest }) {
 // Display transactions, balance, total
 // ========================================
 function updateUi(account) {
+  console.log('account=', account);
   // Display transactions
   displayTransactions(account.transactions);
   // Display balance
@@ -183,18 +184,47 @@ btnTransfer.addEventListener('click', function (e) {
   const recipientAccount = accounts.find(
     account => account['nickName'] === recipientNickname
   );
+  // Clear inputTransfe
   inputTransferTo.value = '';
   inputTransferAmount.value = '';
   if (
     transferAmount > 0 &&
     currentAccount.balance >= transferAmount &&
     recipientAccount &&
+    currentAccount &&
     currentAccount.nickName !== recipientAccount.nickName
   ) {
     currentAccount.transactions.push(-Number(transferAmount));
     recipientAccount.transactions.push(Number(transferAmount));
 
     updateUi(currentAccount);
-    // Clear inputTransfe
+  }
+});
+
+// ========================================
+// delete account
+// ========================================
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+  const closeUsername = inputCloseUsername.value;
+  const closePin = Number(inputClosePin.value);
+  inputCloseUsername.value = '';
+  inputClosePin.value = '';
+  if (
+    currentAccount.nickName === closeUsername &&
+    currentAccount.pin === closePin
+  ) {
+    const index = accounts.findIndex(acc => acc == currentAccount);
+    console.log(accounts.splice(accounts[index], 1));
+    // Display UI welcome message
+    labelWelcome.textContent = `Войдите в свой аккаунт`;
+    // Clear Balancem , SumIn, SumOut, SumInterest, containerTransactions, hide Ui
+    currentAccount = {};
+    labelBalance.textContent = `0$`;
+    labelSumIn.textContent = `0$`;
+    labelSumOut.textContent = `0$`;
+    labelSumInterest.textContent = `0$`;
+    containerTransactions.innerHTML = '';
+    containerApp.style.opacity = '0';
   }
 });
