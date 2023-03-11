@@ -140,10 +140,28 @@ const displayTotal = function ({ transactions, interest }) {
     .reduce((acc, item) => acc + item, 0)}$`;
   labelSumInterest.textContent = interestTotal;
 };
+
+const displayData = function () {
+  function zero_first_format(value) {
+    if (value < 10) {
+      value = '0' + value;
+    }
+    return value;
+  }
+
+  const lang = navigator.language; // определяет язык браузера
+  let date = new Date(); // создание нового объекта с текущей датой и временем
+  let dayNumber = date.getDate(); // получение даты
+  let monthName = zero_first_format(date.getMonth() + 1);
+  // date.toLocaleString(lang, { month: 'long' }); // получение названия месяца
+  let year = date.getFullYear(); // получение текущего года
+  labelDate.textContent = `${dayNumber}.${monthName}.${year}`;
+};
 // ========================================
 // Display transactions, balance, total
 // ========================================
 function updateUi(account) {
+  displayData();
   // Display transactions
   displayTransactions(account.transactions);
   // Display balance
