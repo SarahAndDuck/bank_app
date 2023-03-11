@@ -139,7 +139,6 @@ const displayTotal = function ({ transactions, interest }) {
 // Display transactions, balance, total
 // ========================================
 function updateUi(account) {
-  console.log('account=', account);
   // Display transactions
   displayTransactions(account.transactions);
   // Display balance
@@ -226,5 +225,23 @@ btnClose.addEventListener('click', function (e) {
     labelSumInterest.textContent = `0$`;
     containerTransactions.innerHTML = '';
     containerApp.style.opacity = '0';
+  }
+});
+
+// ========================================
+// request a loan , если депозит больше 10% от суммы запрашиваемого займа
+// ========================================
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+  const loanAmount = Number(inputLoanAmount.value);
+  // clear inputLoanAmount
+  inputLoanAmount.value = '';
+  // проверяем  если депозит больше 10% от суммы запрашиваемого займа
+  const hasQualifyingDeposit = currentAccount.transactions.some(trans => {
+    trans >= (loanAmount * 10) / 100;
+  });
+  if (loanAmount > 0 && hasQualifyingDeposit) {
+    currentAccount.transactions.push(loanAmount);
+    updateUi(currentAccount);
   }
 });
