@@ -85,7 +85,7 @@ const displayTransactions = function (transactions, sort = false) {
   ${index + 1} ${transType == 'deposit' ? 'ДЕПОЗИТ' : 'ВЫВОД СРЕДСТВ'}
 </div>
 
-<div class="transactions__value">${trans}$</div>
+<div class="transactions__value">${trans.toFixed(2)}$</div>
 
  </div>`;
     containerTransactions.insertAdjacentHTML('afterbegin', transactionRow);
@@ -116,7 +116,7 @@ const displayBalance = function (account) {
     account.transactions[0]
   );
   account.balance = balance;
-  labelBalance.textContent = `${balance}$`;
+  labelBalance.textContent = `${balance.toFixed(2)}$`;
 };
 
 // ========================================
@@ -125,19 +125,22 @@ const displayBalance = function (account) {
 const displayTotal = function ({ transactions, interest }) {
   const depositesTotal = `${transactions
     .filter(item => item > 0)
-    .reduce((acc, item) => acc + Math.abs(item), 0)}$`;
+    .reduce((acc, item) => acc + Math.abs(item), 0)
+    .toFixed(2)}$`;
   labelSumIn.textContent = depositesTotal;
 
   const withdrawalsTotal = `${transactions
     .filter(item => item < 0)
-    .reduce((acc, item) => acc + Math.abs(item), 0)}$`;
+    .reduce((acc, item) => acc + Math.abs(item), 0)
+    .toFixed(2)}$`;
   labelSumOut.textContent = withdrawalsTotal;
 
   const interestTotal = `${transactions
     .filter(item => item > 0)
     .map(item => (item * interest) / 100)
     .filter(item => item > 5)
-    .reduce((acc, item) => acc + item, 0)}$`;
+    .reduce((acc, item) => acc + item, 0)
+    .toFixed(2)}$`;
   labelSumInterest.textContent = interestTotal;
 };
 
@@ -148,12 +151,9 @@ const displayData = function () {
     }
     return value;
   }
-
-  const lang = navigator.language; // определяет язык браузера
   let date = new Date(); // создание нового объекта с текущей датой и временем
   let dayNumber = date.getDate(); // получение даты
   let monthName = zero_first_format(date.getMonth() + 1);
-  // date.toLocaleString(lang, { month: 'long' }); // получение названия месяца
   let year = date.getFullYear(); // получение текущего года
   labelDate.textContent = `${dayNumber}.${monthName}.${year}`;
 };
@@ -181,7 +181,7 @@ btnLogin.addEventListener('click', function (e) {
   const loginUsername = inputLoginUsername.value;
   const loginPin = inputLoginPin.value;
   currentAccount = accounts.find(item => item.nickName == loginUsername);
-  if (currentAccount.pin == Number(loginPin)) {
+  if (currentAccount.pin == +loginPin) {
     // Display UI welcome message
     labelWelcome.textContent = `С возвращением, ${
       currentAccount.userName.split(' ')[0]
@@ -216,8 +216,8 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount &&
     currentAccount.nickName !== recipientAccount.nickName
   ) {
-    currentAccount.transactions.push(-Number(transferAmount));
-    recipientAccount.transactions.push(Number(transferAmount));
+    currentAccount.transactions.push(-transferAmount);
+    recipientAccount.transactions.push(+transferAmount);
 
     updateUi(currentAccount);
   }
@@ -229,7 +229,7 @@ btnTransfer.addEventListener('click', function (e) {
 btnClose.addEventListener('click', function (e) {
   e.preventDefault();
   const closeUsername = inputCloseUsername.value;
-  const closePin = Number(inputClosePin.value);
+  const closePin = +inputClosePin.value;
   inputCloseUsername.value = '';
   inputClosePin.value = '';
   if (
@@ -256,13 +256,15 @@ btnClose.addEventListener('click', function (e) {
 // ========================================
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
-  const loanAmount = Number(inputLoanAmount.value);
+  const loanAmount = Math.floor(inputLoanAmount.value);
+  console.log(typeof loanAmount);
   // clear inputLoanAmount
   inputLoanAmount.value = '';
-  // проверяем  если депозит больше 10% от суммы запрашиваемого займа
-  const hasQualifyingDeposit = currentAccount.transactions.some(trans => {
-    trans >= (loanAmount * 10) / 100;
-  });
+  // проверяем  есть ли депозит больше 10% от суммы запрашиваемого займа
+  const hasQualifyingDeposit = currentAccount.transactions.some(
+    trans => trans >= (loanAmount * 10) / 100
+  );
+
   if (loanAmount > 0 && hasQualifyingDeposit) {
     currentAccount.transactions.push(loanAmount);
     updateUi(currentAccount);
