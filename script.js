@@ -90,6 +90,12 @@ const displayTransactions = function (transactions, sort = false) {
  </div>`;
     containerTransactions.insertAdjacentHTML('afterbegin', transactionRow);
   });
+  // nodelist переносим в массив
+  [...document.querySelectorAll('.transactions__row')].forEach((row, index) =>
+    index % 2
+      ? (row.style.backgroundColor = '#aeb4b7')
+      : (row.style.backgroundColor = '')
+  );
 };
 
 // ========================================
