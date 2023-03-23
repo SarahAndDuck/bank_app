@@ -124,9 +124,41 @@ const inputCloseUsername = getElement('.form__input--user');
 const inputClosePin = getElement('.form__input--pin');
 
 // ======================================
+// displayDataInFormat
+// ======================================
+const displayDataInFormat = function (date) {
+  // const operationDate = new Date(date);
+
+  //  dataOperation =
+  //   dateOperation.getDate() > 9
+  //     ? `${dateOperation.getDate()}`
+  //     : `0${dateOperation.getDate()}`;
+
+  // const monthOperation =
+  //   dateOperation.getMonth() > 8
+  //     ? `${dateOperation.getMonth() + 1}`
+  //     : `0${dateOperation.getMonth() + 1}`;
+  const operationDate = new Date(date);
+  const dateOperation = `${operationDate.getDate()}`.padStart(2, '0');
+  console.log('dateOperation = ', dateOperation);
+  const monthOperation = `${operationDate.getMonth() + 1}`.padStart(2, '0');
+  const hoursOperation = `${operationDate.getHours()}`.padStart(2, '0');
+  const minutesOperation = `${operationDate.getMinutes()}`.padStart(2, '0');
+  const secondsOperation = `${operationDate.getSeconds()}`.padStart(2, '0');
+
+  return [
+    `${dateOperation}-${monthOperation}-${operationDate.getFullYear()}`,
+    `${hoursOperation}:${minutesOperation}:${secondsOperation}`,
+  ];
+};
+// ======================================
 // displayTransactions
 // ======================================
-const displayTransactions = function (transactions, sort = false) {
+const displayTransactions = function (
+  transactions,
+  transactionsDates,
+  sort = false
+) {
   // если   sort = true, копируем  slice() сортированный массив .sort() и присваиваем переменной transacs, иначе оставляем не сортированнм
   const transacs = sort
     ? transactions.slice().sort((a, b) => (a > b ? 1 : -1))
@@ -134,10 +166,16 @@ const displayTransactions = function (transactions, sort = false) {
 
   containerTransactions.innerHTML = '';
   transacs.forEach(function (trans, index) {
+    // получаем текущие дата время
+    const [transactionsData, transactionsTime] = displayDataInFormat(
+      transactionsDates[index]
+    );
     const transType = trans > 0 ? 'deposit' : 'withdrawal';
     const transactionRow = `<div class="transactions__row">
 <div class="transactions__type transactions__type--${transType}">
-  ${index + 1} ${transType == 'deposit' ? 'ДЕПОЗИТ' : 'ВЫВОД СРЕДСТВ'}
+  ${index + 1} ${
+      transType == 'deposit' ? 'ДЕПОЗИТ' : 'ВЫВОД СРЕДСТВ'
+    } от ${transactionsData} ${transactionsTime}
 </div>
 
 <div class="transactions__value">${trans.toFixed(2)}$</div>
@@ -205,38 +243,35 @@ const displayTotal = function ({ transactions, interest }) {
   labelSumInterest.textContent = interestTotal;
 };
 
-const displayData = function () {
-  function zero_first_format(value) {
-    if (value < 10) {
-      value = '0' + value;
-    }
-    return value;
-  }
-  let date = new Date(); // создание нового объекта с текущей датой и временем
-  let dayNumber = date.getDate(); // получение даты
-  let monthName = zero_first_format(date.getMonth() + 1);
-  let year = date.getFullYear(); // получение текущего года
-  labelDate.textContent = `${dayNumber}.${monthName}.${year}`;
-};
 // ========================================
 // Display transactions, balance, total
 // ========================================
 function updateUi(account) {
-  displayData();
+  // получаем текущие дата время
+  const [nowData] = displayDataInFormat(new Date());
+  labelDate.textContent = `${nowData}`;
   // Display transactions
-  displayTransactions(account.transactions);
+  displayTransactions(account.transactions, account.transactionsDates);
   // Display balance
   displayBalance(account);
   //  Display total
   displayTotal(account);
 }
-// ========================================
-// login
-// ========================================
+
 createNicknames(accounts);
 console.log(accounts);
 let currentAccount;
 
+// ========================================
+// Always logged in
+// ========================================
+currentAccount = accounts[0];
+updateUi(currentAccount);
+containerApp.style.opacity = '100';
+
+// ========================================
+// login
+// ========================================
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
   const loginUsername = inputLoginUsername.value;
@@ -279,6 +314,8 @@ btnTransfer.addEventListener('click', function (e) {
   ) {
     currentAccount.transactions.push(-transferAmount);
     recipientAccount.transactions.push(+transferAmount);
+    currentAccount.transactionsDates.push(new Date());
+    recipientAccount.transactionsDates.push(new Date());
 
     updateUi(currentAccount);
   }
@@ -328,6 +365,7 @@ btnLoan.addEventListener('click', function (e) {
 
   if (loanAmount > 0 && hasQualifyingDeposit) {
     currentAccount.transactions.push(loanAmount);
+    currentAccount.transactionsDates.push(new Date());
     updateUi(currentAccount);
   }
 });
@@ -337,5 +375,9 @@ btnLoan.addEventListener('click', function (e) {
 let areTransactionSorted = false;
 
 btnSort.addEventListener('click', function () {
-  displayTransactions(currentAccount.transactions, !areTransactionSorted);
+  displayTransactions(
+    currentAccount.transactions,
+    currentAccount.transactionsDates,
+    !areTransactionSorted
+  );
 });
