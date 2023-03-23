@@ -314,8 +314,8 @@ btnTransfer.addEventListener('click', function (e) {
   ) {
     currentAccount.transactions.push(-transferAmount);
     recipientAccount.transactions.push(+transferAmount);
-    currentAccount.transactionsDates.push(new Date());
-    recipientAccount.transactionsDates.push(new Date());
+    currentAccount.transactionsDates.push(new Date().toISOString());
+    recipientAccount.transactionsDates.push(new Date().toISOString());
 
     updateUi(currentAccount);
   }
@@ -365,7 +365,7 @@ btnLoan.addEventListener('click', function (e) {
 
   if (loanAmount > 0 && hasQualifyingDeposit) {
     currentAccount.transactions.push(loanAmount);
-    currentAccount.transactionsDates.push(new Date());
+    currentAccount.transactionsDates.push(new Date().toISOString());
     updateUi(currentAccount);
   }
 });
