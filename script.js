@@ -8,14 +8,14 @@ const account1 = {
   interest: 1.5,
   pin: 1111,
   transactionsDates: [
-    '2020-10-02T14:43:31.074Z',
-    '2020-10-29T11:24:19.761Z',
     '2020-11-15T10:45:23.907Z',
     '2021-01-22T12:17:46.255Z',
     '2021-02-12T15:14:06.486Z',
     '2021-03-09T11:42:26.371Z',
     '2021-10-09T07:43:59.331Z',
     '2021-10-11T15:21:20.814Z',
+    '2023-03-21T14:43:31.074Z',
+    '2023-03-23T11:24:19.761Z',
   ],
   currency: 'USD',
   locale: 'en-US',
@@ -126,31 +126,33 @@ const inputClosePin = getElement('.form__input--pin');
 // ======================================
 // displayDataInFormat
 // ======================================
-const displayDataInFormat = function (date) {
-  // const operationDate = new Date(date);
+const displayDataInFormat = function (date, isTransaction = true) {
+  const getPassedDay = (date1, date2) =>
+    Math.round(Math.abs(date1 - date2) / (1000 * 60 * 60 * 24));
+  const daysPass = getPassedDay(new Date(), date);
 
-  //  dataOperation =
-  //   dateOperation.getDate() > 9
-  //     ? `${dateOperation.getDate()}`
-  //     : `0${dateOperation.getDate()}`;
+  const dateOperation = `${date.getDate()}`.padStart(2, '0');
+  const monthOperation = `${date.getMonth() + 1}`.padStart(2, '0');
+  const hoursOperation = `${date.getHours()}`.padStart(2, '0');
+  const minutesOperation = `${date.getMinutes()}`.padStart(2, '0');
+  const secondsOperation = `${date.getSeconds()}`.padStart(2, '0');
 
-  // const monthOperation =
-  //   dateOperation.getMonth() > 8
-  //     ? `${dateOperation.getMonth() + 1}`
-  //     : `0${dateOperation.getMonth() + 1}`;
-  const operationDate = new Date(date);
-  const dateOperation = `${operationDate.getDate()}`.padStart(2, '0');
-  console.log('dateOperation = ', dateOperation);
-  const monthOperation = `${operationDate.getMonth() + 1}`.padStart(2, '0');
-  const hoursOperation = `${operationDate.getHours()}`.padStart(2, '0');
-  const minutesOperation = `${operationDate.getMinutes()}`.padStart(2, '0');
-  const secondsOperation = `${operationDate.getSeconds()}`.padStart(2, '0');
-
-  return [
-    `${dateOperation}-${monthOperation}-${operationDate.getFullYear()}`,
-    `${hoursOperation}:${minutesOperation}:${secondsOperation}`,
-  ];
+  if (isTransaction) {
+    if (daysPass === 0) return [`сегодня`];
+    else if (daysPass === 1) return [`вчера`];
+    else {
+      return daysPass > 5
+        ? [
+            `от ${dateOperation}-${monthOperation}-${date.getFullYear()}`,
+            `${hoursOperation}:${minutesOperation}:${secondsOperation}`,
+          ]
+        : [`${daysPass.toString()} дня назад`];
+    }
+  } else if (!isTransaction) {
+    return `${dateOperation}-${monthOperation}-${date.getFullYear()}`;
+  }
 };
+
 // ======================================
 // displayTransactions
 // ======================================
@@ -167,15 +169,16 @@ const displayTransactions = function (
   containerTransactions.innerHTML = '';
   transacs.forEach(function (trans, index) {
     // получаем текущие дата время
-    const [transactionsData, transactionsTime] = displayDataInFormat(
-      transactionsDates[index]
+    const [transactionsData, transactionsTime = ''] = displayDataInFormat(
+      new Date(transactionsDates[index])
     );
     const transType = trans > 0 ? 'deposit' : 'withdrawal';
     const transactionRow = `<div class="transactions__row">
 <div class="transactions__type transactions__type--${transType}">
-  ${index + 1} ${
-      transType == 'deposit' ? 'ДЕПОЗИТ' : 'ВЫВОД СРЕДСТВ'
-    } от ${transactionsData} ${transactionsTime}
+  ${index + 1} ${transType == 'deposit' ? 'ДЕПОЗИТ' : 'ВЫВОД СРЕДСТВ'} 
+</div>
+<div class="transactions__date">
+   ${transactionsData} ${transactionsTime}
 </div>
 
 <div class="transactions__value">${trans.toFixed(2)}$</div>
@@ -248,7 +251,7 @@ const displayTotal = function ({ transactions, interest }) {
 // ========================================
 function updateUi(account) {
   // получаем текущие дата время
-  const [nowData] = displayDataInFormat(new Date());
+  const nowData = displayDataInFormat(new Date(), false);
   labelDate.textContent = `${nowData}`;
   // Display transactions
   displayTransactions(account.transactions, account.transactionsDates);
