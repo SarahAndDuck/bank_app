@@ -308,14 +308,42 @@ function updateUi(account) {
 
 createNicknames(accounts);
 console.log(accounts);
-let currentAccount;
+let currentAccount, currentLogOutTimer;
 
 // ========================================
 // Always logged in
 // ========================================
-currentAccount = accounts[0];
-updateUi(currentAccount);
-containerApp.style.opacity = '100';
+// currentAccount = accounts[0];
+// updateUi(currentAccount);
+// containerApp.style.opacity = '100';
+
+// ========================================
+// timer session
+// ========================================
+const startLogoutTimer = function () {
+  // установить время выхода ( через 5 минут)
+  let time = 300;
+  const logOutTimerCallback = function () {
+    const minutOfTime = String(Math.trunc(time / 60)).padStart(2, '0');
+    const secondOfTime = String(time % 60).padStart(2, '0');
+    // в каждом вызове показывать оставшееся время в UI
+    labelTimer.textContent = `${minutOfTime}:${secondOfTime}`;
+
+    // после истечения времени остановить таймер и выйти из приложения
+    if (time === 0) {
+      clearInterval(logOutTimer);
+      labelWelcome.textContent = `Войдите в свой аккаунт`;
+      currentAccount = {};
+      containerTransactions.innerHTML = '';
+      containerApp.style.opacity = '0';
+    }
+    time--;
+  };
+  // вызов таймера каждую секунду
+  logOutTimerCallback();
+  const logOutTimer = setInterval(logOutTimerCallback, 1000);
+  return logOutTimer;
+};
 
 // ========================================
 // login
@@ -330,6 +358,7 @@ btnLogin.addEventListener('click', function (e) {
     labelWelcome.textContent = `С возвращением, ${
       currentAccount.userName.split(' ')[0]
     }!`;
+
     // Clear login
     inputLoginUsername.value = '';
     inputLoginPin.value = '';
@@ -337,6 +366,10 @@ btnLogin.addEventListener('click', function (e) {
     updateUi(currentAccount);
     containerApp.style.opacity = '100';
   }
+
+  // проверяем существование таймера
+  if (currentLogOutTimer) clearTimeout(currentLogOutTimer);
+  currentLogOutTimer = startLogoutTimer();
 });
 
 // ========================================
@@ -367,6 +400,9 @@ btnTransfer.addEventListener('click', function (e) {
 
     updateUi(currentAccount);
   }
+  // reset timer
+  if (currentLogOutTimer) clearTimeout(currentLogOutTimer);
+  currentLogOutTimer = startLogoutTimer();
 });
 
 // ========================================
@@ -387,11 +423,11 @@ btnClose.addEventListener('click', function (e) {
     // Display UI welcome message
     labelWelcome.textContent = `Войдите в свой аккаунт`;
     // Clear Balancem , SumIn, SumOut, SumInterest, containerTransactions, hide Ui
-    currentAccount = {};
     labelBalance.textContent = `0$`;
     labelSumIn.textContent = `0$`;
     labelSumOut.textContent = `0$`;
     labelSumInterest.textContent = `0$`;
+    currentAccount = {};
     containerTransactions.innerHTML = '';
     containerApp.style.opacity = '0';
   }
@@ -416,6 +452,9 @@ btnLoan.addEventListener('click', function (e) {
     currentAccount.transactionsDates.push(new Date().toISOString());
     updateUi(currentAccount);
   }
+  // reset timer
+  if (currentLogOutTimer) clearTimeout(currentLogOutTimer);
+  currentLogOutTimer = startLogoutTimer();
 });
 // ========================================
 // transactions sorting
