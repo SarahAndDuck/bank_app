@@ -72,7 +72,7 @@ const account4 = {
     '2021-02-12T15:14:06.486Z',
   ],
   // currency: 'CAD',
-  currency: 'EUR',
+  currency: 'CAD',
   locale: 'fr-CA',
 };
 
@@ -124,6 +124,19 @@ const inputCloseUsername = getElement('.form__input--user');
 const inputClosePin = getElement('.form__input--pin');
 
 // ======================================
+// displayValueInFormat
+// ======================================
+const displayValueInFormat = function (
+  locale = 'en-US',
+  currency = 'USD',
+  value
+) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value);
+};
+// ======================================
 // displayDataInFormat
 // ======================================
 const displayDataInFormat = function (date, isTransaction = true) {
@@ -159,6 +172,8 @@ const displayDataInFormat = function (date, isTransaction = true) {
 const displayTransactions = function (
   transactions,
   transactionsDates,
+  locale,
+  currency,
   sort = false
 ) {
   // если   sort = true, копируем  slice() сортированный массив .sort() и присваиваем переменной transacs, иначе оставляем не сортированнм
@@ -168,11 +183,17 @@ const displayTransactions = function (
 
   containerTransactions.innerHTML = '';
   transacs.forEach(function (trans, index) {
+    // --------------------------------------------------------------------
     // получаем текущие дата время
     const [transactionsData, transactionsTime = ''] = displayDataInFormat(
       new Date(transactionsDates[index])
     );
+    // --------------------------------------------------------------------
+    // трансфер в формате страны
+    const formatTransfer = displayValueInFormat(locale, currency, trans);
+    // --------------------------------------------------------------------
     const transType = trans > 0 ? 'deposit' : 'withdrawal';
+    // --------------------------------------------------------------------
     const transactionRow = `<div class="transactions__row">
 <div class="transactions__type transactions__type--${transType}">
   ${index + 1} ${transType == 'deposit' ? 'ДЕПОЗИТ' : 'ВЫВОД СРЕДСТВ'} 
@@ -181,9 +202,9 @@ const displayTransactions = function (
    ${transactionsData} ${transactionsTime}
 </div>
 
-<div class="transactions__value">${trans.toFixed(2)}$</div>
-
+<div class="transactions__value"> ${formatTransfer}</div>
  </div>`;
+    //  --------------------------------------------------------------------
     containerTransactions.insertAdjacentHTML('afterbegin', transactionRow);
   });
   // nodelist переносим в массив
@@ -218,31 +239,50 @@ const displayBalance = function (account) {
     account.transactions[0]
   );
   account.balance = balance;
-  labelBalance.textContent = `${balance.toFixed(2)}$`;
+  // --------------------------------------------------------------------
+  // баланс в формате страны
+  const formatBalance = displayValueInFormat(
+    account.locale,
+    account.currency,
+    balance
+  );
+  labelBalance.textContent = `${formatBalance}`;
 };
 
 // ========================================
 // displayTotal
 // ========================================
-const displayTotal = function ({ transactions, interest }) {
-  const depositesTotal = `${transactions
-    .filter(item => item > 0)
-    .reduce((acc, item) => acc + Math.abs(item), 0)
-    .toFixed(2)}$`;
+const displayTotal = function ({ transactions, interest, locale, currency }) {
+  const depositesTotal = `${displayValueInFormat(
+    locale,
+    currency,
+    transactions
+      .filter(item => item > 0)
+      .reduce((acc, item) => acc + Math.abs(item), 0)
+      .toFixed(2)
+  )}`;
   labelSumIn.textContent = depositesTotal;
 
-  const withdrawalsTotal = `${transactions
-    .filter(item => item < 0)
-    .reduce((acc, item) => acc + Math.abs(item), 0)
-    .toFixed(2)}$`;
+  const withdrawalsTotal = `${displayValueInFormat(
+    locale,
+    currency,
+    transactions
+      .filter(item => item < 0)
+      .reduce((acc, item) => acc + Math.abs(item), 0)
+      .toFixed(2)
+  )}`;
   labelSumOut.textContent = withdrawalsTotal;
 
-  const interestTotal = `${transactions
-    .filter(item => item > 0)
-    .map(item => (item * interest) / 100)
-    .filter(item => item > 5)
-    .reduce((acc, item) => acc + item, 0)
-    .toFixed(2)}$`;
+  const interestTotal = `${displayValueInFormat(
+    locale,
+    currency,
+    transactions
+      .filter(item => item > 0)
+      .map(item => (item * interest) / 100)
+      .filter(item => item > 5)
+      .reduce((acc, item) => acc + item, 0)
+      .toFixed(2)
+  )}`;
   labelSumInterest.textContent = interestTotal;
 };
 
@@ -254,7 +294,12 @@ function updateUi(account) {
   const nowData = displayDataInFormat(new Date(), false);
   labelDate.textContent = `${nowData}`;
   // Display transactions
-  displayTransactions(account.transactions, account.transactionsDates);
+  displayTransactions(
+    account.transactions,
+    account.transactionsDates,
+    account.locale,
+    account.currency
+  );
   // Display balance
   displayBalance(account);
   //  Display total
